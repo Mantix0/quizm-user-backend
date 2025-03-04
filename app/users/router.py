@@ -10,12 +10,12 @@ from ..dependencies import get_current_user
 router = APIRouter(prefix="/api/v1/users", tags=["Работа с пользователями"])
 
 
-@router.get(f"/{id}", summary="Получить пользователя по email")
-async def get_student_by_id(email: str):
-    return await UsersDAO.get_student_by_email(email)
+@router.get(f"/{id}", summary="Получить пользователя по id")
+async def get_student_by_id(id: int):
+    return await UsersDAO.get_user_by_id(id)
 
 
-@router.post("/register/", summary="Зарегистрировать пользователя")
+@router.post(":register/", summary="Зарегистрировать пользователя")
 async def add_user(user_data: UserRegistration):
     user = await UsersDAO.get_user_by_email(email=user_data.email)
     if user:
@@ -29,7 +29,7 @@ async def add_user(user_data: UserRegistration):
     return {'message': 'Вы успешно зарегистрированы!'}
 
 
-@router.post("/login/")
+@router.post(":login/")
 async def auth_user(response: Response, user_data: UserAuth):
     check = await authenticate_user(email=user_data.email, password=user_data.password)
     if check is None:
@@ -40,12 +40,12 @@ async def auth_user(response: Response, user_data: UserAuth):
     return {'access_token': access_token, 'refresh_token': None}
 
 
-@router.get("/current-user/")
+@router.get(":current-user/")
 async def get_current_user(user_data: User = Depends(get_current_user)):
     return user_data
 
 
-@router.post("/logout/")
+@router.post(":logout/")
 async def logout_user(response: Response):
     response.delete_cookie(key="users_access_token")
     return {'message': 'Пользователь успешно вышел из системы'}
