@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi import Response
 
 from .models import User
-from .schemas import UserRegistration, UserAuth
+from .schemas import UserRegistration, UserAuth, AppResponse, UserReturn
 from .dao import UsersDAO
 from .auth import get_password_hash, authenticate_user, create_access_token
 from ..dependencies import get_current_user
@@ -11,9 +11,12 @@ router = APIRouter(prefix="/api/v1/users", tags=["Работа с пользов
 
 
 @router.get(f"/{id}", summary="Получить пользователя по id")
-async def get_student_by_id(id: int):
+async def get_user_by_id(id: int):
     return await UsersDAO.get_user_by_id(id)
 
+@router.get(f"/{id}/records", summary="Получить записи пользователя по id")
+async def get_records_by_student_id(id: int):
+    return await UsersDAO.get_user_records_by_id(id)
 
 @router.post(":register/", summary="Зарегистрировать пользователя")
 async def add_user(user_data: UserRegistration):
@@ -41,8 +44,8 @@ async def auth_user(response: Response, user_data: UserAuth):
 
 
 @router.get(":current-user/")
-async def get_current_user(user_data: User = Depends(get_current_user)):
-    return user_data
+async def get_current_user(user_data: User = Depends(get_current_user)) -> AppResponse[UserReturn]:
+    return AppResponse(data=UserReturn.model_validate(user_data.__dict__))
 
 
 @router.post(":logout/")

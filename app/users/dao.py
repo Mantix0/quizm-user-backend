@@ -1,7 +1,7 @@
 from sqlalchemy.exc import SQLAlchemyError
 
 from sqlalchemy.future import select
-from app.users.models import User
+from app.users.models import User, Record
 from .schemas import UserRegistration
 from ..database import async_session
 
@@ -35,3 +35,9 @@ class UsersDAO:
             return result.scalar_one_or_none()
 
 
+    @classmethod
+    async def get_user_records_by_id(cls, id: int):
+        async with async_session() as session:
+            query = select(Record).filter_by(user_id=id)
+            result = await session.execute(query)
+            return result.all()
