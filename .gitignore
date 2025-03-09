@@ -2,3 +2,5 @@
 .idea/
 .venv/
 **/*.http
+*__pycache__
+black/

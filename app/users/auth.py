@@ -23,12 +23,18 @@ def create_access_token(data: dict) -> str:
     expire = datetime.now(timezone.utc) + timedelta(days=30)
     to_encode.update({"exp": expire})
     auth_data = get_auth_data()
-    encode_jwt = jwt.encode(to_encode, auth_data['secret_key'], algorithm=auth_data['algorithm'])
+    encode_jwt = jwt.encode(
+        to_encode, auth_data["secret_key"], algorithm=auth_data["algorithm"]
+    )
     return encode_jwt
 
 
 async def authenticate_user(email: EmailStr, password: str):
     user = await UsersDAO.get_user_by_email(email)
-    if not user or verify_password(plain_password=password, hashed_password=user.password) is False:
+    if (
+        not user
+        or verify_password(plain_password=password, hashed_password=user.password)
+        is False
+    ):
         return None
     return user

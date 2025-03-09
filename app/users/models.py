@@ -13,8 +13,9 @@ class User(Base):
     password: Mapped[str]
 
     def __str__(self):
-        return (f"{self.__class__.__name__}(id={self.id}, "
-                f"username={self.username!r},")
+        return (
+            f"{self.__class__.__name__}(id={self.id}, " f"username={self.username!r},"
+        )
 
     def __repr__(self):
         return str(self)
@@ -29,10 +30,12 @@ class Record(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     def __str__(self):
-        return (f"{self.__class__.__name__}(id={self.id}, "
-                f"user_id={self.user_id!r},"
-                f"quiz_id={self.quiz_id!r}"
-                f"score={self.score!r}")
+        return (
+            f"{self.__class__.__name__}(id={self.id}, "
+            f"user_id={self.user_id!r},"
+            f"quiz_id={self.quiz_id!r},"
+            f"score={self.score!r}"
+        )
 
     def __repr__(self):
         return str(self)

@@ -1,0 +1,28 @@
+#!/bin/sh
+
+which black > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Installing black"
+    pip install black
+fi
+
+which flake8 > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Installing flake8"
+    pip install flake8
+fi
+
+# find any staged py files
+files="$(git diff --name-only --cached | grep '.*\.py$' | paste -sd ' ' -)"
+if [ "$files" == "" ]; then
+    echo "No files to reformat, skipping"
+    exit 0
+fi
+
+# run the autoformatting, your settings from pyproject.toml will be picked up.
+black $files
+
+flake8 $files
+
+# re-stage
+git add $files
