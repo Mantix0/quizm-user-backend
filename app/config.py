@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
     SECRET_KEY: str
     ALGORITHM: str
+    QUIZ_BACKEND_ADDRESS: str
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
@@ -31,3 +32,7 @@ def get_db_url():
 
 def get_auth_data():
     return {"secret_key": settings.SECRET_KEY, "algorithm": settings.ALGORITHM}
+
+
+def get_quiz_backend_address():
+    return settings.QUIZ_BACKEND_ADDRESS

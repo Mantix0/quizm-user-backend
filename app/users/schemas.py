@@ -24,13 +24,14 @@ class UserAuth(BaseModel):
 
 
 class RecordInput(BaseModel):
-    quiz_id: int = Field(..., description="Id квиза")
+    quiz_id: int = Field(..., ge=0, le=99, description="Id квиза")
     score: int = Field(..., description="Счёт в %")
 
 
 class RecordReturn(BaseModel):
     id: int
     quiz_id: int = Field(..., description="Id квиза")
+    quiz_name: str = Field(..., description="Название квиза")
     score: int = Field(..., description="Счёт в %")
     created_at: datetime = Field(..., description="Дата создания")
 
