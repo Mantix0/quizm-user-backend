@@ -1,5 +1,7 @@
+import asyncio
 from typing import List
 
+import httpx
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi import Response
 
@@ -15,16 +17,37 @@ from .schemas import (
 )
 from .dao import UsersDAO, RecordsDAO
 from .auth import get_password_hash, authenticate_user, create_access_token
-from ..dependencies import get_active_user
+from ..config import get_quiz_backend_address
+from ..dependencies import get_active_user, set_quiz_name
 
 router = APIRouter(prefix="/api/v1/users", tags=["Работа с пользователями"])
+
+
+@router.get("/{user_id}", summary="Получить пользователя по user_id")
+async def get_records_by_user_id(user_id: int) -> AppResponse[UserReturn]:
+    user = await UsersDAO.get_user_by_id(user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь не найден"
+        )
+
+    return AppResponse(data=UserReturn.model_validate(user.__dict__))
 
 
 @router.get("/{user_id}/records", summary="Получить записи пользователя по user_id")
 async def get_records_by_student_id(user_id: int) -> AppResponseList[RecordReturn]:
     records = await UsersDAO.get_user_records_by_id(user_id)
+    records = [i.__dict__ for i in records]
+
+    tasks = []
+    for record in records:
+        tasks.append(asyncio.ensure_future(set_quiz_name(record)))
+
+    records = await asyncio.gather(*tasks)
+
     return AppResponseList(
-        data=[RecordReturn.model_validate(record.__dict__) for record in records]
+        data=[RecordReturn.model_validate(record) for record in records]
     )
 
 
@@ -67,7 +90,9 @@ async def get_records_by_student_id(
     record: RecordInput, user_data: User = Depends(get_active_user)
 ) -> AppResponse[RecordReturn]:
     new_record = await RecordsDAO.add(user_data, **record.model_dump())
-    return AppResponse(data=RecordReturn.model_validate(new_record.__dict__))
+    new_record = new_record.__dict__
+    await set_quiz_name(new_record)
+    return AppResponse(data=RecordReturn.model_validate(new_record))
 
 
 @router.post(":logout/", summary="Деактивировать действующего пользователя")
@@ -79,6 +104,17 @@ async def logout_user(response: Response):
 router_records = APIRouter(prefix="/api/v1/records", tags=["Работа с записями"])
 
 
-@router_records.get("/{item_id}", summary="Получить записи квиза по quiz_id")
-async def get_records_by_quiz_id(item_id: int):
-    return await UsersDAO.get_user_records_by_id(item_id)
+@router_records.get("/{quiz_id}", summary="Получить записи квиза по quiz_id")
+async def get_records_by_quiz_id(quiz_id: int) -> AppResponseList[RecordReturn]:
+    records = await RecordsDAO.get_records_by_id(quiz_id)
+    records = [i.__dict__ for i in records]
+
+    tasks = []
+    for record in records:
+        tasks.append(asyncio.ensure_future(set_quiz_name(record)))
+
+    records = await asyncio.gather(*tasks)
+
+    return AppResponseList(
+        data=[RecordReturn.model_validate(record) for record in records]
+    )

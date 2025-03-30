@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
 
+import httpx
 from jose import jwt, JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import get_auth_data
+from app.config import get_auth_data, get_quiz_backend_address
 from app.database import async_session
 from fastapi import Request, HTTPException, status, Depends
 
@@ -56,3 +57,17 @@ async def get_active_user(token: str = Depends(get_token)):
         )
 
     return user
+
+
+async def set_quiz_name(record: dict):
+    try:
+        address = "http://" + get_quiz_backend_address() + "/quizzes/" + str(record["quiz_id"])
+        async with httpx.AsyncClient() as client:
+            response = await client.get(address)
+            response = response.json()
+            record.update({"quiz_name": response["name"]})
+
+    except Exception as e:
+        record.update({"quiz_name": ""})
+
+    return record
