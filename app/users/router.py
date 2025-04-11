@@ -38,16 +38,8 @@ async def get_records_by_user_id(user_id: int) -> AppResponse[UserReturn]:
 @router.get("/{user_id}/records", summary="Получить записи пользователя по user_id")
 async def get_records_by_student_id(user_id: int) -> AppResponseList[RecordReturn]:
     records = await UsersDAO.get_user_records_by_id(user_id)
-    records = [i.__dict__ for i in records]
-
-    tasks = []
-    for record in records:
-        tasks.append(asyncio.ensure_future(set_quiz_name(record)))
-
-    records = await asyncio.gather(*tasks)
-
     return AppResponseList(
-        data=[RecordReturn.model_validate(record) for record in records]
+        data=[RecordReturn.model_validate(record.__dict__) for record in records]
     )
 
 
@@ -89,10 +81,10 @@ async def get_current_user(
 async def get_records_by_student_id(
     record: RecordInput, user_data: User = Depends(get_active_user)
 ) -> AppResponse[RecordReturn]:
-    new_record = await RecordsDAO.add(user_data, **record.model_dump())
-    new_record = new_record.__dict__
-    await set_quiz_name(new_record)
-    return AppResponse(data=RecordReturn.model_validate(new_record))
+    record = record.model_dump()
+    await set_quiz_name(record)
+    new_record = await RecordsDAO.add(user_data, **record)
+    return AppResponse(data=RecordReturn.model_validate(new_record.__dict__))
 
 
 @router.post(":logout/", summary="Деактивировать действующего пользователя")
@@ -107,14 +99,6 @@ router_records = APIRouter(prefix="/api/v1/records", tags=["Работа с за
 @router_records.get("/{quiz_id}", summary="Получить записи квиза по quiz_id")
 async def get_records_by_quiz_id(quiz_id: int) -> AppResponseList[RecordReturn]:
     records = await RecordsDAO.get_records_by_id(quiz_id)
-    records = [i.__dict__ for i in records]
-
-    tasks = []
-    for record in records:
-        tasks.append(asyncio.ensure_future(set_quiz_name(record)))
-
-    records = await asyncio.gather(*tasks)
-
     return AppResponseList(
-        data=[RecordReturn.model_validate(record) for record in records]
+        data=[RecordReturn.model_validate(record.__dict__) for record in records]
     )

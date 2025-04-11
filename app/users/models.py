@@ -26,6 +26,7 @@ class Record(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     user: Mapped["User"] = relationship("User", backref="records")
     quiz_id: Mapped[int]
+    quiz_name: Mapped[str] = mapped_column(nullable=True)
     score: Mapped[int]
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 

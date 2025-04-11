@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TypeVar, Generic, List
+from typing import TypeVar, Generic, List, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -31,7 +31,7 @@ class RecordInput(BaseModel):
 class RecordReturn(BaseModel):
     id: int
     quiz_id: int = Field(..., description="Id квиза")
-    quiz_name: str = Field(..., description="Название квиза")
+    quiz_name: Optional[str] = Field(..., description="Название квиза")
     score: int = Field(..., description="Счёт в %")
     created_at: datetime = Field(..., description="Дата создания")
 
