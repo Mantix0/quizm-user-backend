@@ -1,10 +1,13 @@
+from fastapi import Depends
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta, timezone
 
 from pydantic import EmailStr
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_auth_data
+from app.dependencies import get_session
 from app.users.dao import UsersDAO
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -29,8 +32,8 @@ def create_access_token(data: dict) -> str:
     return encode_jwt
 
 
-async def authenticate_user(email: EmailStr, password: str):
-    user = await UsersDAO.get_user_by_email(email)
+async def authenticate_user(email: EmailStr, password: str, session: AsyncSession):
+    user = await UsersDAO.get_user_by_email(email, session)
     if (
         not user
         or verify_password(plain_password=password, hashed_password=user.password)

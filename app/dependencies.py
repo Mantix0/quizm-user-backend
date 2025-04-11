@@ -14,7 +14,7 @@ from app.users.dao import UsersDAO
 async def get_session() -> AsyncSession:
     async with async_session() as session:
         yield session
-    session.close()
+    await session.close()
 
 
 def get_token(request: Request):
@@ -26,7 +26,7 @@ def get_token(request: Request):
     return token
 
 
-async def get_active_user(token: str = Depends(get_token)):
+async def get_active_user(token: str = Depends(get_token), session: AsyncSession = Depends(get_session)):
     try:
         auth_data = get_auth_data()
         payload = jwt.decode(
@@ -50,7 +50,7 @@ async def get_active_user(token: str = Depends(get_token)):
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Не найден ID пользователя"
         )
 
-    user = await UsersDAO.get_user_by_id(int(user_id))
+    user = await UsersDAO.get_user_by_id(int(user_id), session)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
