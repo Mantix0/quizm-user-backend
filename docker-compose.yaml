@@ -1,0 +1,33 @@
+name: quizm_user_backend
+
+services:
+  web:
+    build: .
+    container_name: fastapi_app
+    command: >
+      bash -c "
+      alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8888 --reload
+      "
+    ports:
+      - "8888:8888"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17
+    container_name: pg_database
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

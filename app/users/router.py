@@ -23,8 +23,13 @@ from ..dependencies import get_active_user, set_quiz_name, get_session
 router = APIRouter(prefix="/api/v1/users", tags=["Работа с пользователями"])
 
 
-@router.get("/{user_id}", summary="Получить пользователя по user_id",)
-async def get_records_by_user_id(user_id: int, session: AsyncSession = Depends(get_session)) -> AppResponse[UserReturn]:
+@router.get(
+    "/{user_id}",
+    summary="Получить пользователя по user_id",
+)
+async def get_records_by_user_id(
+    user_id: int, session: AsyncSession = Depends(get_session)
+) -> AppResponse[UserReturn]:
     user = await UsersDAO.get_user_by_id(user_id, session)
 
     if not user:
@@ -36,7 +41,9 @@ async def get_records_by_user_id(user_id: int, session: AsyncSession = Depends(g
 
 
 @router.get("/{user_id}/records", summary="Получить записи пользователя по user_id")
-async def get_records_by_student_id(user_id: int, session: AsyncSession = Depends(get_session)) -> AppResponseList[RecordReturn]:
+async def get_records_by_student_id(
+    user_id: int, session: AsyncSession = Depends(get_session)
+) -> AppResponseList[RecordReturn]:
     records = await UsersDAO.get_user_records_by_id(user_id, session)
     return AppResponseList(
         data=[RecordReturn.model_validate(record.__dict__) for record in records]
@@ -44,7 +51,9 @@ async def get_records_by_student_id(user_id: int, session: AsyncSession = Depend
 
 
 @router.post(":register/", summary="Зарегистрировать пользователя")
-async def add_user(user_data: UserRegistration, session: AsyncSession = Depends(get_session)):
+async def add_user(
+    user_data: UserRegistration, session: AsyncSession = Depends(get_session)
+):
     user = await UsersDAO.get_user_by_email(user_data.email, session)
     if user:
         raise HTTPException(
@@ -57,15 +66,21 @@ async def add_user(user_data: UserRegistration, session: AsyncSession = Depends(
 
 
 @router.post(":login/", summary="Авторизовать пользователя")
-async def auth_user(response: Response, user_data: UserAuth, session: AsyncSession = Depends(get_session)):
-    check = await authenticate_user(email=user_data.email, password=user_data.password, session=session)
+async def auth_user(
+    response: Response,
+    user_data: UserAuth,
+    session: AsyncSession = Depends(get_session),
+):
+    check = await authenticate_user(
+        email=user_data.email, password=user_data.password, session=session
+    )
     if check is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверная почта или пароль"
         )
     access_token = create_access_token({"sub": str(check.id)})
-    response.set_cookie(key="users_access_token", value=access_token, httponly=True)
-    return {"access_token": access_token, "refresh_token": None}
+    response.set_cookie(key="users_access_token", value=access_token)
+    return {"user_access_token": access_token, "refresh_token": None}
 
 
 @router.get(":current-user/", summary="Получить действующего пользователя")
@@ -79,7 +94,9 @@ async def get_current_user(
     ":current-user/records", summary="Добавить запись действующему пользователю"
 )
 async def get_records_by_student_id(
-    record: RecordInput, user_data: User = Depends(get_active_user), session: AsyncSession = Depends(get_session)
+    record: RecordInput,
+    user_data: User = Depends(get_active_user),
+    session: AsyncSession = Depends(get_session),
 ) -> AppResponse[RecordReturn]:
     record_dict = record.model_dump()
     await set_quiz_name(record_dict)
@@ -97,7 +114,9 @@ router_records = APIRouter(prefix="/api/v1/records", tags=["Работа с за
 
 
 @router_records.get("/{quiz_id}", summary="Получить записи квиза по quiz_id")
-async def get_records_by_quiz_id(quiz_id: int, session: AsyncSession = Depends(get_session)) -> AppResponseList[RecordReturn]:
+async def get_records_by_quiz_id(
+    quiz_id: int, session: AsyncSession = Depends(get_session)
+) -> AppResponseList[RecordReturn]:
     records = await RecordsDAO.get_records_by_id(quiz_id, session)
     return AppResponseList(
         data=[RecordReturn.model_validate(record.__dict__) for record in records]
