@@ -13,7 +13,8 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
     SECRET_KEY: str
     ALGORITHM: str
-    QUIZ_BACKEND_ADDRESS: str
+    QUIZM_BACKEND_ADDRESS: str
+    QUIZM_FRONTEND_ADDRESS: str
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
@@ -34,5 +35,9 @@ def get_auth_data():
     return {"secret_key": settings.SECRET_KEY, "algorithm": settings.ALGORITHM}
 
 
+def get_origins():
+    return ["http://" + origin for origin in [settings.QUIZM_FRONTEND_ADDRESS]]
+
+
 def get_quiz_backend_address():
-    return settings.QUIZ_BACKEND_ADDRESS
+    return settings.QUIZM_BACKEND_ADDRESS

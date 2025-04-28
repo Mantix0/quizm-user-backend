@@ -5,7 +5,6 @@ import httpx
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi import Response
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from .models import User, Record
 from .schemas import (
     UserRegistration,
@@ -79,7 +78,13 @@ async def auth_user(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверная почта или пароль"
         )
     access_token = create_access_token({"sub": str(check.id)})
-    response.set_cookie(key="users_access_token", value=access_token)
+    response.set_cookie(
+        key="users_access_token",
+        value=access_token,
+        httponly=True,
+        samesite="none",
+        secure=True,
+    )
     return {"user_access_token": access_token, "refresh_token": None}
 
 
