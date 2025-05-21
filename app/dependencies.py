@@ -26,7 +26,9 @@ def get_token(request: Request):
     return token
 
 
-async def get_active_user(token: str = Depends(get_token), session: AsyncSession = Depends(get_session)):
+async def get_active_user(
+    token: str = Depends(get_token), session: AsyncSession = Depends(get_session)
+):
     try:
         auth_data = get_auth_data()
         payload = jwt.decode(
@@ -61,7 +63,12 @@ async def get_active_user(token: str = Depends(get_token), session: AsyncSession
 
 async def set_quiz_name(record: dict):
     try:
-        address = "http://" + get_quiz_backend_address() + "/quizzes/" + str(record["quiz_id"])
+        address = (
+            "http://"
+            + get_quiz_backend_address()
+            + "/api/v1/quizzes/"
+            + str(record["quiz_id"])
+        )
         async with httpx.AsyncClient() as client:
             response = await client.get(address)
             response = response.json()

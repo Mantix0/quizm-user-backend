@@ -25,7 +25,7 @@
 
 Указать переменные среды и поднять контейнер
 ```
-docker-compose up
+docker-compose up --build
 ```
 
 ### Альтернативный запуск без docker

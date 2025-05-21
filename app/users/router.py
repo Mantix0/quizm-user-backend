@@ -85,7 +85,7 @@ async def auth_user(
         samesite="none",
         secure=True,
     )
-    return {"user_access_token": access_token, "refresh_token": None}
+    return {"users_access_token": access_token, "refresh_token": None}
 
 
 @router.get(":current-user/", summary="Получить действующего пользователя")
@@ -93,6 +93,17 @@ async def get_current_user(
     user_data: User = Depends(get_active_user),
 ) -> AppResponse[UserReturn]:
     return AppResponse(data=UserReturn.model_validate(user_data.__dict__))
+
+
+@router.get(":current-user/records", summary="Получить записи пользователя по user_id")
+async def get_records_by_student_id(
+    user_data: User = Depends(get_active_user),
+    session: AsyncSession = Depends(get_session),
+) -> AppResponseList[RecordReturn]:
+    records = await UsersDAO.get_user_records_by_id(user_data.__dict__["id"], session)
+    return AppResponseList(
+        data=[RecordReturn.model_validate(record.__dict__) for record in records]
+    )
 
 
 @router.post(

@@ -19,7 +19,6 @@ if [ "$files" == "" ]; then
     exit 0
 fi
 
-# run the autoformatting, your settings from pyproject.toml will be picked up.
 black $files
 
 flake8 $files

@@ -1,18 +1,23 @@
 #!/bin/bash
 set -e
 
-psql -v ON_ERROR_STOP=1 --username "$DB_USER" <<-EOSQL
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     DO
     \$do\$
     BEGIN
         IF NOT EXISTS (
-            SELECT FROM pg_catalog.pg_user WHERE usename = '$DB_USER'
+            SELECT FROM pg_catalog.pg_user WHERE usename = '$POSTGRES_USER'
         ) THEN
-            CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';
+            CREATE USER $POSTGRES_USER WITH PASSWORD '$POSTGRES_PASSWORD';
         END IF;
+
+        IF NOT EXISTS (
+            SELECT FROM pg_database WHERE datname = '$POSTGRES_DB'
+        ) THEN
+            CREATE DATABASE $POSTGRES_DB OWNER $POSTGRES_USER;
+        END IF;
+
+        GRANT ALL PRIVILEGES ON DATABASE $POSTGRES_DB TO $POSTGRES_USER;
     END
     \$do\$;
-
-    CREATE DATABASE $DB_NAME OWNER $DB_USER;
-    GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 EOSQL

@@ -30,6 +30,7 @@ class RecordInput(BaseModel):
 
 class RecordReturn(BaseModel):
     id: int
+    user_id: int
     quiz_id: int = Field(..., description="Id квиза")
     quiz_name: Optional[str] = Field(..., description="Название квиза")
     score: int = Field(..., description="Счёт в %")

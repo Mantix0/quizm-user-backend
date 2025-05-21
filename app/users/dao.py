@@ -33,9 +33,7 @@ class UsersDAO:
 
     @classmethod
     async def get_user_records_by_id(cls, id: int, session: AsyncSession):
-        query = (
-            select(Record).filter_by(user_id=id).order_by(Record.created_at.desc())
-        )
+        query = select(Record).filter_by(user_id=id).order_by(Record.created_at.desc())
         result = await session.execute(query)
         return result.scalars().all()
 
@@ -43,9 +41,7 @@ class UsersDAO:
 class RecordsDAO:
     @classmethod
     async def get_records_by_id(cls, quiz_id: int, session: AsyncSession):
-        query = (
-            select(Record).filter_by(quiz_id=quiz_id).order_by(Record.score.desc())
-        )
+        query = select(Record).filter_by(quiz_id=quiz_id).order_by(Record.score.desc())
         result = await session.execute(query)
         return result.scalars().all()
 
